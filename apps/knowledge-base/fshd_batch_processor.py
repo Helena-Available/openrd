@@ -312,8 +312,9 @@ def main():
     """主函数 - 批量处理整个FSHD知识库"""
     processor = FSHDBatchProcessor()
     
-    # 知识库根路径
-    knowledge_base_path = r"C:\yoyo\openrd-master\FSHD_知识库"
+    # 从环境变量获取知识库根路径
+    import os
+    knowledge_base_path = os.getenv('KNOWLEDGE_BASE_PATH', './docs')
     
     print("🎯 开始批量处理FSHD知识库")
     print(f"📍 知识库位置: {knowledge_base_path}")
