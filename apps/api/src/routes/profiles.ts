@@ -1,5 +1,5 @@
 import express from 'express';
-import { pool } from '../config/database';
+import { getPool } from '../db/pool.js';
 
 const router = express.Router();
 
@@ -7,12 +7,13 @@ const router = express.Router();
 router.post('/profiles', async (req, res) => {
     try {
         const { userId, fullName, idNumber, birthDate, gender } = req.body;
+        const pool = getPool();
         const result = await pool.query(
             'INSERT INTO user_profiles (user_id, full_name, id_number, birth_date, gender) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [userId, fullName, idNumber, birthDate, gender]
         );
         res.json({ success: true, data: result.rows[0] });
-    } catch (error) {
+    } catch (error: any) {
         res.status(500).json({ success: false, error: error.message });
     }
 });

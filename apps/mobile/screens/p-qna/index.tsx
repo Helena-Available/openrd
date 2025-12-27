@@ -7,10 +7,23 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import styles from './styles';
 
+// 导入新组件
+import ApiKeyConfigModal from './components/ApiKeyConfigModal';
+import MedicalHistoryExportModal from './components/MedicalHistoryExportModal';
+import MemoryStatusIndicator from './components/MemoryStatusIndicator';
+
 interface HotQuestion {
   id: string;
   question: string;
   answer: string;
+}
+
+interface Reference {
+  id: number;
+  sourceFile: string;
+  chunkIndex: number;
+  preview: string;
+  url: string;
 }
 
 interface KnowledgeCategory {
@@ -49,6 +62,13 @@ const P_QNA = () => {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [showSearchResult, setShowSearchResult] = useState(false);
   const [searchResultAnswer, setSearchResultAnswer] = useState('');
+  const [searchResultReferences, setSearchResultReferences] = useState<Reference[]>([]);
+
+  // 新功能状态
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [apiKey, setApiKey] = useState<string>('');
+  const [isMemoryEnabled, setIsMemoryEnabled] = useState(true);
 
   const hotQuestions: HotQuestion[] = [
     {
@@ -157,6 +177,24 @@ const P_QNA = () => {
       setShowSearchResult(true);
       setSearchResultAnswer(`感谢您的问题："${searchQuery}"\n\n这是一个很好的问题。根据FSHD专业知识库，建议您：\n1. 咨询专业医生获取个性化建议\n2. 参考相关的临床路径和指南\n3. 可以在患者社区中寻求其他患者的经验分享`);
       
+      // 模拟引用链接数据
+      setSearchResultReferences([
+        {
+          id: 1,
+          sourceFile: 'FSHD临床指南.pdf',
+          chunkIndex: 0,
+          preview: 'FSHD患者家庭康复训练应遵循个体化原则...',
+          url: '/api/knowledge/chunk/1',
+        },
+        {
+          id: 2,
+          sourceFile: '肌肉骨骼健康管理手册.pdf',
+          chunkIndex: 3,
+          preview: '适度运动有助于维持肌肉功能，避免过度疲劳...',
+          url: '/api/knowledge/chunk/2',
+        },
+      ]);
+      
       // 清空搜索框并失去焦点
       setSearchQuery('');
       searchInputRef.current?.blur();
@@ -183,6 +221,29 @@ const P_QNA = () => {
     Alert.alert('临床路径', `正在加载"${pathway.title}"详细内容...`);
   };
 
+  // 新功能处理函数
+  const handleApiKeyConfigPress = () => {
+    setShowApiKeyModal(true);
+  };
+
+  const handleExportPress = () => {
+    setShowExportModal(true);
+  };
+
+  const handleApiKeySave = (savedApiKey: string) => {
+    setApiKey(savedApiKey);
+    Alert.alert('保存成功', 'API密钥已保存，时间服务功能已启用');
+  };
+
+  const handleExportSubmit = (exportOptions: any) => {
+    console.log('导出选项:', exportOptions);
+    // 这里应该调用实际的导出API
+  };
+
+  const handleMemoryStatusPress = () => {
+    Alert.alert('记忆功能', '点击记忆状态指示器可以查看和管理记忆');
+  };
+
   const renderSearchResult = () => {
     if (!showSearchResult) return null;
 
@@ -196,6 +257,23 @@ const P_QNA = () => {
             <View style={styles.searchResultContent}>
               <Text style={styles.searchResultTitle}>智能回答</Text>
               <Text style={styles.searchResultAnswer}>{searchResultAnswer}</Text>
+              {/* 引用链接 */}
+              {searchResultReferences.length > 0 && (
+                <View style={styles.referencesContainer}>
+                  <Text style={styles.referencesTitle}>参考资料：</Text>
+                  {searchResultReferences.map((ref: Reference) => (
+                    <TouchableOpacity
+                      key={ref.id}
+                      onPress={() => Alert.alert('查看原文', `文件：${ref.sourceFile}\n片段：${ref.preview}`)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.referenceLink}>
+                        [{ref.id}] {ref.sourceFile} (片段{ref.chunkIndex})
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -330,8 +408,17 @@ const P_QNA = () => {
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* 顶部搜索区域 */}
+        {/* 顶部工具栏 */}
         <View style={styles.header}>
+          {/* 左侧：记忆状态指示器 */}
+          <View style={styles.toolbarLeft}>
+            <MemoryStatusIndicator
+              onPress={handleMemoryStatusPress}
+              compact={true}
+            />
+          </View>
+
+          {/* 中间：搜索区域 */}
           <View style={styles.searchContainer}>
             <TextInput
               ref={searchInputRef}
@@ -354,6 +441,25 @@ const P_QNA = () => {
                 size={14}
                 color="#FFFFFF"
               />
+            </TouchableOpacity>
+          </View>
+
+          {/* 右侧：功能按钮 */}
+          <View style={styles.toolbarRight}>
+            <TouchableOpacity
+              style={styles.toolbarButton}
+              onPress={handleExportPress}
+              activeOpacity={0.7}
+            >
+              <FontAwesome6 name="file-export" size={16} color="#969FFF" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.toolbarButton}
+              onPress={handleApiKeyConfigPress}
+              activeOpacity={0.7}
+            >
+              <FontAwesome6 name="key" size={16} color="#969FFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -379,6 +485,20 @@ const P_QNA = () => {
           {renderClinicalPathways()}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* API密钥配置模态框 */}
+      <ApiKeyConfigModal
+        visible={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        onSave={handleApiKeySave}
+      />
+
+      {/* 病史导出模态框 */}
+      <MedicalHistoryExportModal
+        visible={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        onExport={handleExportSubmit}
+      />
     </SafeAreaView>
   );
 };

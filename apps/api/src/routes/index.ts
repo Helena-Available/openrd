@@ -5,6 +5,7 @@ import type { AppLogger } from '../config/logger.js';
 import { getPool } from '../db/pool.js';
 import { createAuthRouter } from '../modules/auth/auth.routes.js';
 import { aiChatRoutes } from './ai-chat.routes.js';
+import { medicalHistoryRoutes } from './medical-history.routes.js';
 import { asyncHandler } from '../utils/async-handler.js';
 import { createKnowledgeRouter } from '../modules/knowledge/knowledge.routes.js';
 
@@ -32,6 +33,7 @@ export const registerRoutes = (app: Express, context: RouteContext) => {
   apiRouter.use('/auth', createAuthRouter(context));
   apiRouter.use('/ai', aiChatRoutes);
   apiRouter.use('/knowledge', createKnowledgeRouter(context));
+  apiRouter.use('/medical-history', medicalHistoryRoutes);
 
   app.use('/api', apiRouter);
 };

@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { loadAppEnv } from '../config/env';
+import { loadAppEnv } from '../config/env.js';
 const config = loadAppEnv();
 
 const openai = new OpenAI({
@@ -15,6 +15,14 @@ export interface AIQuestionRequest {
     condition?: string;
     language?: string;
   };
+  /** 用户历史记忆（可选） */
+  memories?: Array<{
+    summary: string;
+    type: string;
+    createdAt: string;
+  }>;
+  /** 当前时间（可选） */
+  currentTime?: string;
 }
 
 export class AIChatService {
@@ -52,12 +60,49 @@ export class AIChatService {
    - 尊重隐私，不询问个人身份信息
    - 遇到无法回答的专科问题，建议咨询相关专家
 
+6. **记忆使用指导**：
+   - 请参考【历史记忆摘要】中的信息，了解用户之前的症状和健康状况
+   - 如果用户提到新的症状或健康变化，请在回答中确认并建议记录
+   - 结合历史记忆提供个性化的建议，识别症状模式和时间趋势
+
+7. **时间感知指导**：
+   - 当前时间是：${request.currentTime || '未知'}，请在处理时间相关问题时参考此时间
+   - 如果用户提到时间相关症状（如"最近一周"、"昨天开始"），请结合当前时间进行计算和理解
+   - 帮助用户建立清晰的时间线认知，将症状与具体时间段关联
+
+8. **病史梳理指导**：
+   - 请自动识别用户提到的症状及其时间关系，帮助梳理症状时间线
+   - 如果用户描述了多个症状和时间点，请在回答中简要总结时间线
+   - 将新症状与历史症状进行对比分析，识别变化趋势
+
+9. **记忆更新指导**：
+   - 从对话中识别关键医疗信息（症状、时间、患者陈述）
+   - 在回答中建议记录重要的新信息，以便未来提供更精准的帮助
+   - 避免重复询问用户已经提供过的信息
+
 请根据用户问题的具体内容，智能判断最适合的回答方式。`;
 
-      const userPrompt = `用户信息：${JSON.stringify(request.userContext || {})}
-用户问题：${request.question}
+      const memoryContext = request.memories && request.memories.length > 0
+        ? request.memories.map((mem, idx) => `记忆${idx + 1}: ${mem.summary} (${mem.type}, ${new Date(mem.createdAt).toLocaleDateString('zh-CN')})`).join('\n')
+        : '暂无相关历史记忆';
+      
+      const userPrompt = `【用户信息】${JSON.stringify(request.userContext || {})}
 
-请用中文回答，保持专业且温暖的态度：`;
+【当前时间】${request.currentTime || '未知'}
+
+【历史记忆摘要】
+${memoryContext}
+
+【用户问题】
+${request.question}
+
+【病史梳理要求】
+请根据以上信息：
+1. 识别用户提到的症状及其时间关系
+2. 如有新的症状信息，请简要总结并建议记录
+3. 在回答中体现对历史记忆和时间上下文的理解
+
+请结合用户的历史记忆和时间上下文，提供个性化的回答。用中文回答，保持专业且温暖的态度：`;
 
       const response = await openai.chat.completions.create({
         model: config.AI_API_MODEL,    

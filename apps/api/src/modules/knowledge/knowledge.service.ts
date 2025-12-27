@@ -17,6 +17,12 @@ interface KnowledgeServiceDeps {
 interface PythonBridgeResult {
   success: boolean;
   error?: string;
+  stats?: {
+    total_chunks?: number;
+    language_distribution?: Record<string, number>;
+    category_distribution?: Record<string, number>;
+    file_type_distribution?: Record<string, number>;
+  };
   [key: string]: unknown;
 }
 
@@ -42,17 +48,17 @@ export class KnowledgeService {
       let stdout = '';
       let stderr = '';
 
-      child.stdout.on('data', (data) => {
+      child.stdout?.on('data', (data) => {
         stdout += data.toString();
       });
 
-      child.stderr.on('data', (data) => {
+      child.stderr?.on('data', (data) => {
         stderr += data.toString();
       });
 
       if (input) {
-        child.stdin.write(JSON.stringify(input));
-        child.stdin.end();
+        child.stdin?.write(JSON.stringify(input));
+        child.stdin?.end();
       }
 
       child.on('close', (code) => {

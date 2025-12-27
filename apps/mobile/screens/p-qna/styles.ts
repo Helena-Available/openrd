@@ -13,8 +13,31 @@ export default StyleSheet.create({
   header: {
     paddingHorizontal: 24,
     paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  toolbarLeft: {
+    flex: 0,
+  },
+  toolbarRight: {
+    flex: 0,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  toolbarButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -329,6 +352,24 @@ export default StyleSheet.create({
   pathwayDescription: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.5)',
+  },
+  referencesContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  referencesTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  referenceLink: {
+    fontSize: 12,
+    color: '#969FFF',
+    textDecorationLine: 'underline',
+    marginBottom: 2,
   },
 });
 

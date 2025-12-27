@@ -16,9 +16,15 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from './styles';
 
+// 导入API密钥配置模态框
+import ApiKeyConfigModal from '../p-qna/components/ApiKeyConfigModal';
+
 const SettingsScreen = () => {
   const router = useRouter();
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKey, setApiKey] = useState<string>('');
+  const [isMemoryEnabled, setIsMemoryEnabled] = useState(true);
 
   const handlePrivacySettingsPress = () => {
     router.push('/p-privacy_settings');
@@ -62,6 +68,32 @@ const SettingsScreen = () => {
 
   const handleModalOverlayPress = () => {
     setIsLogoutModalVisible(false);
+  };
+
+  // 新功能处理函数
+  const handleApiKeyConfigPress = () => {
+    setShowApiKeyModal(true);
+  };
+
+  const handleApiKeySave = (savedApiKey: string) => {
+    setApiKey(savedApiKey);
+    Alert.alert('保存成功', 'API密钥已保存，时间服务功能已启用');
+  };
+
+  const handleMemoryToggle = async () => {
+    try {
+      const newEnabled = !isMemoryEnabled;
+      await AsyncStorage.setItem('@memory_enabled', newEnabled.toString());
+      setIsMemoryEnabled(newEnabled);
+      Alert.alert('提示', `记忆功能已${newEnabled ? '启用' : '禁用'}`);
+    } catch (error) {
+      console.error('切换记忆状态失败:', error);
+      Alert.alert('错误', '切换记忆状态失败，请重试');
+    }
+  };
+
+  const handleExportHistoryPress = () => {
+    Alert.alert('导出历史', '导出历史查看功能即将上线');
   };
 
   return (
@@ -147,7 +179,7 @@ const SettingsScreen = () => {
             </TouchableOpacity>
 
             {/* 关于我们 */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.settingItem}
               onPress={handleAboutUsPress}
               activeOpacity={0.7}
@@ -160,6 +192,81 @@ const SettingsScreen = () => {
                   <View style={styles.settingTextContainer}>
                     <Text style={styles.settingTitle}>关于我们</Text>
                     <Text style={styles.settingSubtitle}>产品介绍、版本信息、联系方式</Text>
+                  </View>
+                </View>
+                <FontAwesome6 name="chevron-right" size={14} color="rgba(255, 255, 255, 0.5)" />
+              </View>
+            </TouchableOpacity>
+
+            {/* API密钥配置 */}
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={handleApiKeyConfigPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingItemContent}>
+                <View style={styles.settingItemLeft}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: 'rgba(245, 158, 11, 0.2)' }]}>
+                    <FontAwesome6 name="key" size={18} color="#F59E0B" />
+                  </View>
+                  <View style={styles.settingTextContainer}>
+                    <Text style={styles.settingTitle}>API密钥配置</Text>
+                    <Text style={styles.settingSubtitle}>智谱API密钥，用于时间服务</Text>
+                  </View>
+                </View>
+                <FontAwesome6 name="chevron-right" size={14} color="rgba(255, 255, 255, 0.5)" />
+              </View>
+            </TouchableOpacity>
+
+            {/* 记忆功能开关 */}
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={handleMemoryToggle}
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingItemContent}>
+                <View style={styles.settingItemLeft}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
+                    <FontAwesome6 name="brain" size={18} color="#10B981" />
+                  </View>
+                  <View style={styles.settingTextContainer}>
+                    <Text style={styles.settingTitle}>记忆功能</Text>
+                    <Text style={styles.settingSubtitle}>{isMemoryEnabled ? '已启用' : '已禁用'}</Text>
+                  </View>
+                </View>
+                <View style={{
+                  width: 40,
+                  height: 20,
+                  backgroundColor: isMemoryEnabled ? '#10B981' : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 10,
+                  alignItems: isMemoryEnabled ? 'flex-end' : 'flex-start',
+                  justifyContent: 'center',
+                  paddingHorizontal: 2,
+                }}>
+                  <View style={{
+                    width: 16,
+                    height: 16,
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: 8,
+                  }} />
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            {/* 导出历史 */}
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={handleExportHistoryPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingItemContent}>
+                <View style={styles.settingItemLeft}>
+                  <View style={[styles.settingIconContainer, { backgroundColor: 'rgba(150, 159, 255, 0.2)' }]}>
+                    <FontAwesome6 name="file-export" size={18} color="#969FFF" />
+                  </View>
+                  <View style={styles.settingTextContainer}>
+                    <Text style={styles.settingTitle}>导出历史</Text>
+                    <Text style={styles.settingSubtitle}>查看之前的病史报告导出记录</Text>
                   </View>
                 </View>
                 <FontAwesome6 name="chevron-right" size={14} color="rgba(255, 255, 255, 0.5)" />
@@ -232,6 +339,13 @@ const SettingsScreen = () => {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* API密钥配置模态框 */}
+      <ApiKeyConfigModal
+        visible={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        onSave={handleApiKeySave}
+      />
     </SafeAreaView>
   );
 };

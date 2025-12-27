@@ -22,7 +22,24 @@ const envSchema = z
     OPENAI_API_KEY: z.string().min(1).optional(),
     AI_API_BASE_URL: z.string().url().default('https://api.siliconflow.cn/v1'),
     AI_API_MODEL: z.string().default('deepseek-ai/DeepSeek-V3'),
-    AI_API_TIMEOUT: z.coerce.number().int().positive().default(30000)
+    AI_API_TIMEOUT: z.coerce.number().int().positive().default(30000),
+    PYTHON_PATH: z.string().default('python3'),
+    // MCP相关环境变量
+    MCP_ENABLED: z.string().default('true'),
+    MCP_TIME_SERVICE_ENDPOINT: z.string().default('https://open.bigmodel.cn/api/mcp-broker/proxy/time/mcp'),
+    MCP_TIME_SERVICE_TIMEOUT: z.string().default('10000'),
+    MCP_TIME_SERVICE_RETRIES: z.string().default('3'),
+    MCP_TIME_SERVICE_RETRY_DELAY: z.string().default('1000'),
+    MCP_TIME_SERVICE_FALLBACK_ENABLED: z.string().default('true'),
+    MCP_MEMORY_SERVICE_ENDPOINT: z.string().default('http://localhost:8080'),
+    MCP_MEMORY_SERVICE_TIMEOUT: z.string().default('15000'),
+    MCP_MEMORY_SERVICE_RETRIES: z.string().default('2'),
+    MCP_MEMORY_SERVICE_RETRY_DELAY: z.string().default('2000'),
+    MCP_MEMORY_SERVICE_FALLBACK_ENABLED: z.string().default('true'),
+    MCP_MEMORY_FALLBACK_ENABLED: z.string().default('true'),
+    MCP_MEMORY_FALLBACK_MAX: z.string().default('50'),
+    MCP_CACHE_TIME_TTL: z.string().default('300000'),
+    MCP_CACHE_MEMORY_TTL: z.string().default('600000')
   })
   .transform((value) => ({
     ...value,
