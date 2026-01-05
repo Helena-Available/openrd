@@ -208,13 +208,21 @@ def main():
     """主函数 - 专门处理疾病定义和科普分类"""
     processor = FSHDPDFProcessor()
     
-    # 专门处理疾病定义和科普分类 路径如下
-    folder_path = r"C:\yoyo\openrd-master\FSHD_知识库\01.疾病定义和科普\第一批：2025年3月31日"
-    category = "疾病定义和科普"
+    # 从环境变量获取路径，默认为./docs
+    import os
+    folder_path = os.getenv('KNOWLEDGE_BASE_PATH', './docs')
+    category = os.getenv('KNOWLEDGE_CATEGORY', '疾病定义和科普')
     
-    print("🎯 开始处理: 疾病定义和科普分类")
+    print("🎯 开始处理知识库文档")
     print(f"📍 文档位置: {folder_path}")
+    print(f"📂 分类: {category}")
     print("⏳ 这可能需要几分钟时间，请耐心等待...\n")
+    
+    # 检查路径是否存在
+    if not os.path.exists(folder_path):
+        print(f"❌ 文档路径不存在: {folder_path}")
+        print("💡 请设置环境变量 KNOWLEDGE_BASE_PATH 或创建 ./docs 目录")
+        return
     
     # 处理该分类
     total_chunks = processor.process_single_category(folder_path, category)
@@ -227,7 +235,6 @@ def main():
     print(f"{'🎉' * 20}")
     print(f"📊 本次处理统计:")
     print(f"   📁 分类: {category}")
-    print(f"   📄 处理的PDF数量: 9个 (8英文 + 1中文)")
     print(f"   🧩 生成的文本块: {total_chunks} 个")
     print(f"\n📈 知识库总体统计:")
     print(f"   🧩 总文本块数: {stats['total_chunks']}")
